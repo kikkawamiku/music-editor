@@ -721,6 +721,44 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
 .btn-del:hover { background: #2d0f0f; color: #f87171; border-color: #7f1d1d; }
 .btn-del.confirm { background: #7f1d1d; color: #fca5a5; border-color: #dc2626; }
 
+/* ── Draft transfer (export / import) ───────────────── */
+.modal-transfer-section {
+  border-top: 1px solid #0f2340;
+  padding: 14px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  flex-shrink: 0;
+}
+
+.transfer-row {
+  display: flex; gap: 8px;
+}
+
+.btn-transfer {
+  flex: 1;
+  padding: 10px 12px;
+  background: #0d1e33; color: #60a5fa;
+  border: 1px solid #1e3a5f; border-radius: 9px;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-transfer:hover:not(:disabled):not(.btn-transfer--disabled) { background: #1e3a5f; }
+.btn-transfer:disabled,
+.btn-transfer--disabled { opacity: 0.4; cursor: not-allowed; }
+
+.transfer-result {
+  font-size: 0.8rem; padding: 8px 12px;
+  border-radius: 8px; text-align: center;
+  animation: fade-in 0.2s ease;
+}
+.transfer-result--success { background: #052e16; color: #86efac; border: 1px solid #166534; }
+.transfer-result--error   { background: #2d0f0f; color: #fca5a5; border: 1px solid #7f1d1d; }
+
+.transfer-hint {
+  font-size: 0.72rem; color: #334155; line-height: 1.5;
+}
+
 /* ── Responsive ──────────────────────────────────────── */
 
 /* PC (768px+): current desktop layout, no changes needed */
@@ -803,6 +841,7 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
   .btn-save-draft { min-height: 44px; }
   .btn-load { min-height: 40px; }
   .btn-del  { min-height: 40px; }
+  .btn-transfer { min-height: 48px; font-size: 0.9rem; }
 }
 
 /* PC hint text: shown on desktop, hidden on mobile */

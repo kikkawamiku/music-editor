@@ -53,6 +53,27 @@ function writeList(list) {
   localStorage.setItem(LS_KEY, JSON.stringify(list));
 }
 
+// ── Base64 <-> Blob ───────────────────────────────────────
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dataURLToBlob(dataURL) {
+  const comma  = dataURL.indexOf(",");
+  const header = dataURL.slice(0, comma);
+  const b64    = dataURL.slice(comma + 1);
+  const type   = header.replace(/^data:/, "").replace(/;base64$/, "");
+  const raw    = atob(b64);
+  const buf    = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+  return new Blob([buf], { type });
+}
+
 // ── Hook ─────────────────────────────────────────────────
 export function useDrafts() {
   const [drafts, setDrafts] = useState(readList);
@@ -99,5 +120,53 @@ export function useDrafts() {
     setDrafts(updated);
   }, []);
 
-  return { drafts, save, load, remove };
+  // Export all drafts (metadata + audio blobs) as a JSON string
+  const exportAll = useCallback(async () => {
+    const list = readList();
+    const entries = await Promise.all(
+      list.map(async (meta) => {
+        const blob = await idbGet(meta.id);
+        return { ...meta, _audioDataURL: blob ? await blobToDataURL(blob) : null };
+      })
+    );
+    return JSON.stringify({ version: 1, exportedAt: Date.now(), drafts: entries }, null, 2);
+  }, []);
+
+  // Import drafts from a JSON string — upsert by id (same id = overwrite, new id = add)
+  const importAll = useCallback(async (jsonText) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch {
+      throw new Error("JSONの解析に失敗しました。ファイルが壊れている可能性があります。");
+    }
+    if (parsed?.version !== 1 || !Array.isArray(parsed.drafts)) {
+      throw new Error("フォーマットが無効です。このアプリで書き出したJSONを選択してください。");
+    }
+
+    const currentList = readList();
+    const byId = Object.fromEntries(currentList.map((d) => [d.id, d]));
+
+    let count = 0;
+    for (const entry of parsed.drafts) {
+      if (!entry?.id || !entry?.name) continue;
+      const { _audioDataURL, ...meta } = entry;
+      if (_audioDataURL) {
+        try {
+          await idbPut(meta.id, dataURLToBlob(_audioDataURL));
+        } catch (e) {
+          console.warn("[import] audio restore failed:", meta.id, e);
+        }
+      }
+      byId[meta.id] = meta;
+      count++;
+    }
+
+    const updated = Object.values(byId).sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0));
+    writeList(updated);
+    setDrafts(updated);
+    return count;
+  }, []);
+
+  return { drafts, save, load, remove, exportAll, importAll };
 }

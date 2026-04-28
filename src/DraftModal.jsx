@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function fmtDate(ts) {
   return new Date(ts).toLocaleDateString("ja-JP", {
@@ -14,10 +14,25 @@ function fmtDur(sec) {
   return `${m}:${s}`;
 }
 
-export default function DraftModal({ drafts, currentFileName, onSave, onLoad, onDelete, onClose }) {
-  const [name, setName]       = useState("");
-  const [loadingId, setLoadingId] = useState(null);
-  const [confirmId, setConfirmId] = useState(null); // delete confirm
+export default function DraftModal({
+  drafts, currentFileName,
+  onSave, onLoad, onDelete, onClose,
+  onExport, onImport,
+}) {
+  const [name,        setName]        = useState("");
+  const [loadingId,   setLoadingId]   = useState(null);
+  const [confirmId,   setConfirmId]   = useState(null);
+  const [transferring, setTransferring] = useState(false);
+  const [importResult, setImportResult] = useState(null); // { count } | { error }
+  const resultTimerRef = useRef(null);
+
+  // Auto-clear import result after 6s
+  useEffect(() => {
+    if (!importResult) return;
+    clearTimeout(resultTimerRef.current);
+    resultTimerRef.current = setTimeout(() => setImportResult(null), 6000);
+    return () => clearTimeout(resultTimerRef.current);
+  }, [importResult]);
 
   const handleSave = async () => {
     const trimmed = name.trim();
@@ -36,6 +51,32 @@ export default function DraftModal({ drafts, currentFileName, onSave, onLoad, on
     if (confirmId !== id) { setConfirmId(id); return; }
     await onDelete(id);
     setConfirmId(null);
+  };
+
+  const handleExport = async () => {
+    setTransferring(true);
+    try {
+      await onExport();
+    } finally {
+      setTransferring(false);
+    }
+  };
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = "";
+    setTransferring(true);
+    setImportResult(null);
+    try {
+      const text  = await file.text();
+      const count = await onImport(text);
+      setImportResult({ count });
+    } catch (err) {
+      setImportResult({ error: err.message });
+    } finally {
+      setTransferring(false);
+    }
   };
 
   return (
@@ -115,6 +156,49 @@ export default function DraftModal({ drafts, currentFileName, onSave, onLoad, on
               ))}
             </ul>
           )}
+        </div>
+
+        {/* Backup / Transfer section */}
+        <div className="modal-transfer-section">
+          <p className="modal-section-label">バックアップ / 端末間転送</p>
+          <div className="transfer-row">
+            {/* Export */}
+            <button
+              className="btn-transfer"
+              onClick={handleExport}
+              disabled={transferring || drafts.length === 0}
+              title="全ドラフトをJSONファイルで書き出し"
+            >
+              {transferring ? "処理中…" : "📤 JSONで書き出し"}
+            </button>
+
+            {/* Import — iOS-safe file-label overlay pattern */}
+            <label
+              className={`btn-transfer file-label ${transferring ? "btn-transfer--disabled" : ""}`}
+              title="JSONファイルからドラフトを読み込み"
+            >
+              📥 JSONを読み込み
+              <input
+                type="file"
+                accept=".json,application/json"
+                onChange={handleImportFile}
+                disabled={transferring}
+              />
+            </label>
+          </div>
+
+          {/* Result feedback */}
+          {importResult && (
+            <p className={`transfer-result ${importResult.error ? "transfer-result--error" : "transfer-result--success"}`}>
+              {importResult.error
+                ? `⚠ ${importResult.error}`
+                : `✓ ${importResult.count}件のドラフトを読み込みました`}
+            </p>
+          )}
+
+          <p className="transfer-hint">
+            PCで書き出したJSONをAirDrop・メール等でスマホに送ることで編集を引き継げます。同じIDのドラフトは上書きされます。
+          </p>
         </div>
       </div>
     </div>

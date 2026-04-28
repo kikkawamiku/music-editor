@@ -39,7 +39,7 @@ export default function SimpleEditView({ onNavigate }) {
   } = useAudioAnalyzer();
 
   const { play, stop, playing: previewPlaying, activeIndex } = usePreviewPlayer();
-  const { drafts, save: saveDraft, load: loadDraft, remove: removeDraft } = useDrafts();
+  const { drafts, save: saveDraft, load: loadDraft, remove: removeDraft, exportAll, importAll } = useDrafts();
 
   // ── Playback state ──────────────────────────────────────
   const handlePlayStateChange = useCallback((state) => {
@@ -137,6 +137,20 @@ export default function SimpleEditView({ onNavigate }) {
     }
   }, [loadDraft, loadSegments, stop]);
 
+  // ── Draft JSON export (download) ────────────────────────
+  const handleExportDrafts = useCallback(async () => {
+    const json = await exportAll();
+    const blob = new Blob([json], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `music-editor-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [exportAll]);
+
   // ── WAV export ──────────────────────────────────────────
   const handleExport = useCallback(async () => {
     // Guard: must have decoded audio and at least one playlist item
@@ -225,6 +239,8 @@ export default function SimpleEditView({ onNavigate }) {
           onLoad={handleLoadDraft}
           onDelete={removeDraft}
           onClose={() => setDraftOpen(false)}
+          onExport={handleExportDrafts}
+          onImport={importAll}
         />
       )}
 
