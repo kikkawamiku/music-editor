@@ -235,7 +235,8 @@ export default function SimpleEditView({ onNavigate }) {
           onDragLeave={() => setDragOver(false)}
         >
           <div className="dz-icon">♪</div>
-          <p className="dz-title">音声ファイルをドロップ</p>
+          <p className="dz-title hint-body-pc">音声ファイルをドロップ</p>
+          <p className="dz-title hint-body-mobile">音声ファイルを開く</p>
           <p className="hint">MP3 · WAV · FLAC · OGG</p>
           <label className="btn-primary mt">
             ファイルを選択
@@ -258,7 +259,8 @@ export default function SimpleEditView({ onNavigate }) {
             <div className="split-bar-left">
               <div className="hint-block">
                 <span className="hint-title">分割操作</span>
-                <span className="hint-body">再生中に押す</span>
+                <span className="hint-body hint-body-pc">再生中にスペースキーで分割</span>
+                <span className="hint-body hint-body-mobile">再生中にボタンをタップ</span>
               </div>
               <button className={`btn-split ${isPlaying ? "can-split" : ""}`} onClick={handleSplit}>
                 <span className="split-icon">✂</span>

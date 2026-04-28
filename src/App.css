@@ -677,9 +677,84 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
 .btn-del.confirm { background: #7f1d1d; color: #fca5a5; border-color: #dc2626; }
 
 /* ── Responsive ──────────────────────────────────────── */
-@media (max-width: 700px) {
+
+/* PC (768px+): current desktop layout, no changes needed */
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  /* App shell */
+  .app { padding: 12px 12px 60px; }
+
+  /* Header: wrap brand + actions */
+  .app-header { flex-wrap: wrap; gap: 10px; }
+  .brand-icon { width: 38px; height: 38px; border-radius: 10px; font-size: 1.1rem; }
+  h1 { font-size: 1.1rem; }
+  .subtitle { display: none; }
+  .header-actions { width: 100%; justify-content: flex-end; }
+
+  /* Larger tap targets — minimum 44px height */
+  .btn-primary  { padding: 14px 24px; font-size: 1rem;   min-height: 48px; }
+  .btn-ghost    { padding: 12px 18px; font-size: 0.9rem;  min-height: 48px; }
+  .btn-draft    { padding: 10px 18px; font-size: 0.9rem;  min-height: 44px; }
+
+  /* Drop zone */
+  .drop-zone  { padding: 48px 16px; }
+  .dz-title   { font-size: 1rem; }
+  .dz-icon    { font-size: 2.8rem; }
+
+  /* Split bar */
+  .split-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; }
+  .split-bar-left, .split-bar-right { justify-content: center; }
+  .btn-split {
+    padding: 16px 24px; font-size: 1.05rem; min-height: 52px;
+    justify-content: center;
+  }
+  .btn-split kbd { display: none; }
+
+  /* Mobile hint text toggle */
+  .hint-body-pc     { display: none; }
+  .hint-body-mobile { display: block; }
+
+  /* BPM group */
+  .bpm-group { flex-wrap: wrap; justify-content: center; }
+  .bpm-input {
+    font-size: 1rem;   /* prevents iOS auto-zoom on focus */
+    padding: 10px 12px; min-height: 44px; width: 80px;
+  }
+  .btn-bpm         { padding: 10px 18px; font-size: 0.9rem;  min-height: 44px; }
+  .btn-draft-inline { padding: 10px 18px; font-size: 0.88rem; min-height: 44px; }
+
+  /* Bottom panels: playlist below waveform on mobile */
   .bottom-panels { grid-template-columns: 1fr; }
   .playlist-editor { position: static; }
-  .split-bar { flex-direction: column; align-items: stretch; }
-  .split-bar-left, .split-bar-right { justify-content: center; }
+
+  /* Segment list: no max-height cap on mobile */
+  .segment-list { max-height: none; }
+  .sc-add    { width: 32px; height: 32px; font-size: 1rem; }
+  .sc-delete { width: 32px; height: 32px; font-size: 0.8rem; }
+
+  /* Playlist items */
+  .pl-items     { max-height: none; }
+  .pl-item      { padding: 10px 10px; }
+  .pl-play-from { width: 28px; height: 28px; }
+
+  /* Playlist footer buttons */
+  .btn-preview { padding: 14px; font-size: 0.9rem; min-height: 48px; }
+  .btn-stop    { padding: 14px; font-size: 0.9rem; min-height: 48px; }
+  .btn-clear   { padding: 14px 16px; font-size: 0.85rem; min-height: 48px; }
+  .btn-export  { padding: 14px; font-size: 0.9rem; min-height: 48px; }
+
+  /* Modal */
+  .modal-backdrop { padding: 12px; }
+  .modal          { border-radius: 14px; }
+  .draft-name-input {
+    font-size: 1rem; /* prevents iOS auto-zoom on focus */
+    min-height: 44px;
+  }
+  .btn-save-draft { min-height: 44px; }
+  .btn-load { min-height: 40px; }
+  .btn-del  { min-height: 40px; }
 }
+
+/* PC hint text: shown on desktop, hidden on mobile */
+.hint-body-mobile { display: none; }
