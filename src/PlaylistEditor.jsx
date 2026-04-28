@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getLabelById } from "./labels";
 
 function fmt(sec) {
@@ -15,20 +15,29 @@ export default function PlaylistEditor({
   playlist, segments, onReorder, onRemove, onClear,
   onPlay, onStop, onExport, playing, activeIndex, exporting,
 }) {
-  const [dragFrom, setDragFrom] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
+  const [dragFrom,    setDragFrom]    = useState(null);
+  const [dragOver,    setDragOver]    = useState(null);
+  const [scrollToIdx, setScrollToIdx] = useState(null);
   const listRef = useRef(null);
 
   const segMap = Object.fromEntries(segments.map((s) => [s.id, s]));
   const items  = playlist.map((id) => segMap[id]).filter(Boolean);
 
-  // Auto-scroll to newest item when playlist grows
+  // Scroll to bottom when a new item is appended
   useEffect(() => {
     if (listRef.current && playlist.length > 0) {
       listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [playlist.length]);
 
+  // Scroll moved item into view after ↑↓ reorder
+  useEffect(() => {
+    if (scrollToIdx === null || !listRef.current) return;
+    listRef.current.children[scrollToIdx]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    setScrollToIdx(null);
+  }, [scrollToIdx]);
+
+  // Desktop drag-and-drop reorder
   const commitDrop = (toIdx) => {
     if (dragFrom === null || dragFrom === toIdx) return;
     const next = [...playlist];
@@ -38,6 +47,16 @@ export default function PlaylistEditor({
     setDragFrom(null);
     setDragOver(null);
   };
+
+  // Mobile ↑↓ tap reorder
+  const moveItem = useCallback((fromIdx, toIdx) => {
+    if (toIdx < 0 || toIdx >= playlist.length) return;
+    const next = [...playlist];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
+    onReorder(next);
+    setScrollToIdx(toIdx);
+  }, [playlist, onReorder]);
 
   return (
     <div className="playlist-editor">
@@ -53,7 +72,8 @@ export default function PlaylistEditor({
         <div className="pl-empty">
           <div className="pl-empty-icon">♫</div>
           <p>フレーズ一覧の <strong>＋</strong> で追加</p>
-          <p className="hint">ドラッグで順番を変更できます</p>
+          <p className="hint hint-body-pc">ドラッグで順番を変更できます</p>
+          <p className="hint hint-body-mobile">↑↓ で順番を変更できます</p>
         </div>
       ) : (
         <ul className="pl-items" ref={listRef}>
@@ -82,6 +102,23 @@ export default function PlaylistEditor({
                   </span>
                 </span>
                 {isActive && <span className="pl-playing-dot" />}
+
+                {/* ↑↓ buttons — visible on mobile only (CSS-controlled) */}
+                <div className="pl-move-group" aria-label="順番を変更">
+                  <button
+                    className="pl-move-btn"
+                    onClick={() => moveItem(i, i - 1)}
+                    disabled={i === 0}
+                    aria-label="上に移動"
+                  >↑</button>
+                  <button
+                    className="pl-move-btn"
+                    onClick={() => moveItem(i, i + 1)}
+                    disabled={i === items.length - 1}
+                    aria-label="下に移動"
+                  >↓</button>
+                </div>
+
                 <button className="pl-play-from" onClick={() => onPlay(items, i)} title="ここから再生">▶</button>
                 <button className="pl-remove" onClick={() => onRemove(i)}>×</button>
               </li>

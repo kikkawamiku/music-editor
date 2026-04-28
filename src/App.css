@@ -353,6 +353,28 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
 .pl-item.pl-drag-over { box-shadow: 0 -2px 0 var(--lc, #3b82f6); }
 
 .pl-drag { color: #1e293b; font-size: 0.9rem; user-select: none; }
+
+/* ── Playlist ↑↓ move buttons (mobile reorder) ───────── */
+.pl-move-group {
+  display: none; /* shown only on mobile via media query */
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.pl-move-btn {
+  width: 38px; min-height: 44px;
+  background: transparent; color: #475569;
+  border: 1px solid #1e293b; border-radius: 7px;
+  font-size: 1rem; cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+  /* Extend tap target without enlarging the visual border */
+  -webkit-tap-highlight-color: transparent;
+}
+.pl-move-btn:hover:not(:disabled) { background: #0f1c2e; color: #94a3b8; }
+.pl-move-btn:active:not(:disabled) { background: #1e3a5f; color: #60a5fa; }
+.pl-move-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 .pl-num { font-size: 0.65rem; font-weight: 800; color: #334155; min-width: 14px; text-align: center; }
 
 .pl-dot {
@@ -757,9 +779,13 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
   .sc-delete { width: 32px; height: 32px; font-size: 0.8rem; }
 
   /* Playlist items */
-  .pl-items     { max-height: none; }
-  .pl-item      { padding: 10px 10px; }
-  .pl-play-from { width: 28px; height: 28px; }
+  .pl-items      { max-height: none; }
+  .pl-item       { padding: 10px 10px; gap: 8px; }
+  .pl-play-from  { width: 34px; height: 44px; }
+  .pl-remove     { font-size: 1.1rem; padding: 0 6px; min-height: 44px; }
+  /* Show ↑↓ buttons, hide desktop drag handle */
+  .pl-move-group { display: flex; }
+  .pl-drag       { display: none; }
 
   /* Playlist footer buttons */
   .btn-preview { padding: 14px; font-size: 0.9rem; min-height: 48px; }
