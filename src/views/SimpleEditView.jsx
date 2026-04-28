@@ -71,7 +71,11 @@ export default function SimpleEditView({ onNavigate }) {
 
   // ── File loading ────────────────────────────────────────
   const loadFile = useCallback(async (file) => {
-    if (!file || !file.type.startsWith("audio/")) return;
+    if (!file) return;
+    const mime = file.type.toLowerCase();
+    // iOS Safari sometimes reports M4A as "video/mp4" and may omit MIME type entirely.
+    // The accept attribute already filters the picker, so an empty mime is treated as valid.
+    if (mime && !mime.startsWith("audio/") && mime !== "video/mp4") return;
     stop();
     fileBlobRef.current = file;
     fileNameRef.current = file.name ?? "";
@@ -197,9 +201,13 @@ export default function SimpleEditView({ onNavigate }) {
           {audioUrl && (
             <>
               <button className="btn-draft" onClick={() => setDraftOpen(true)}>ドラフト</button>
-              <label className="btn-ghost">
+              <label className="btn-ghost file-label">
                 別の曲を開く
-                <input type="file" accept="audio/*" onChange={(e) => loadFile(e.target.files[0])} hidden />
+                <input
+                  type="file"
+                  accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.aif,.aiff,audio/*"
+                  onChange={(e) => { loadFile(e.target.files[0]); e.target.value = ""; }}
+                />
               </label>
             </>
           )}
@@ -238,9 +246,13 @@ export default function SimpleEditView({ onNavigate }) {
           <p className="dz-title hint-body-pc">音声ファイルをドロップ</p>
           <p className="dz-title hint-body-mobile">音声ファイルを開く</p>
           <p className="hint">MP3 · WAV · FLAC · OGG</p>
-          <label className="btn-primary mt">
+          <label className="btn-primary mt file-label">
             ファイルを選択
-            <input type="file" accept="audio/*" onChange={(e) => loadFile(e.target.files[0])} hidden />
+            <input
+              type="file"
+              accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.aif,.aiff,audio/*"
+              onChange={(e) => { loadFile(e.target.files[0]); e.target.value = ""; }}
+            />
           </label>
         </div>
       ) : (

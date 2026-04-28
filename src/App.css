@@ -59,6 +59,29 @@ h1 { font-size: 1.5rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03e
 }
 .btn-ghost:hover { background: #0f1c2e; color: #94a3b8; }
 
+/* ── File label — iOS-safe overlay pattern ───────────── */
+/*
+ * The input is stretched to cover the whole label area at opacity 0.
+ * The user's tap lands directly on the <input>, bypassing the
+ * display:none restriction that breaks iOS Safari with the `hidden` attr.
+ */
+.file-label {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.file-label input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+  /* Prevent the browser from rendering an invisible text cursor */
+  font-size: 0;
+}
+
 /* ── Drop zone ───────────────────────────────────────── */
 .drop-zone {
   border: 2px dashed #1e3a5f; border-radius: 18px;
